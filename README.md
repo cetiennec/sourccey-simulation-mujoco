@@ -231,6 +231,10 @@ STL assets, preserved in their original filenames and layout.
 - [sourccey/build.py](sourccey/build.py): reproducible conversion; edit this to make lasting model changes.
 - [models/sourccey.xml](models/sourccey.xml): generated working model.
 - [models/build_info.json](models/build_info.json): inventory, mass, wheel centers, compiler version.
+- [models/source/dome_collision.json](models/source/dome_collision.json): fixed dome collision center
+  and radius fitted to the current shell, with fit error and source hashes. Normal builds read these
+  parameters without refitting. `python -m tools.fit_dome` reproduces the fit offline and prints JSON
+  for review if the CAD changes; it does not modify meshes or calibration files.
 
 The original URDF compiles directly with all **17 movable joints**. The working
 MJCF preserves 132 links, 171 visual meshes, source axes/inertias, and adds
