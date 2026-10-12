@@ -63,13 +63,43 @@ measured on a different day and do not constitute one controlled battery conditi
 
 ## Identification plots
 
-![Latest strafe speed map, floor trajectory and measured speed over time](identification/strafe_response.png)
+![Original forward and yaw static maps and illustrative model step response](identification/base_model.png)
 
-Run `y_20261012_100428`: twelve 1.8 s holds through ±100% command. The
-direction-averaged full-command speed is 25.9 cm/s. Orange segments show the
-steady speed fitted over the last approximately 1.0 s of each hold; the trajectory
-also shows forward drift during the strafe experiment. These are hardware
-measurements, not simulated results or a held-out model validation.
+Original October 7 overview: forward and yaw speed tables in both directions,
+with an illustrative delay/lag step response. It predates the strafe experiment;
+its dotted dead-zone/line fits are reference approximations, while the PR uses
+piecewise-linear tables.
+
+![Original forward identification summary](identification/ident_x.png)
+
+Original October 7 forward summary: measured speed maps, gain versus command,
+LiDAR speed against the original offline fit, and wall-derived displacement.
+The overlaid table and fit are preserved from that report; they are not a replay
+of the current PR implementation. The PR retains separate direction tables.
+
+![Measured strafe speed and response model, with transition details](identification/y_20261012_100428_dynamics.png)
+
+Run `y_20261012_100428`: measured LiDAR sideways speed (black), the PR's
+first-order response (orange), and the table with delay alone (blue). The two
+zoomed panels show ±80% and ±100% command transitions. The PR response uses
+τ = 0.10 s and delay = 0.10 s; replaying the logged commands gives RMS
+0.0100 m/s over 992 finite LiDAR velocity samples. This is a fresh evaluation
+of the versioned response, rather than the original fitting script's RMS.
+The 0.4 s local-slope velocity estimate smooths transitions, so lag and delay
+remain provisional. This is an in-sample response replay, not MuJoCo chassis
+motion or held-out validation.
+
+The [speed map and trajectory](identification/strafe_response.png) summarize the
+twelve 1.8 s holds through ±100% command, reaching 25.9 cm/s averaged across
+directions. Reproduce the dynamics figure with NumPy and Matplotlib installed:
+
+```sh
+python tools/plot_strafe_dynamics.py /path/to/y_20261012_100428 \
+  --output docs/identification/y_20261012_100428_dynamics.png
+```
+
+The input stem needs the saved `.csv` command log and `_corner.npz` track.
+The plotting script reads local files only and never connects to the robot.
 
 ![Measured yaw rate and candidate model fits, with transition details](identification/theta_20261007_171950_dynamics.png)
 
