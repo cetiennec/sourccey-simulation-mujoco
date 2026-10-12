@@ -61,6 +61,24 @@ Battery voltage and lift height were not logged, so no battery-charge law is fit
 and the difference cannot be attributed uniquely to charge. Forward and yaw were
 measured on a different day and do not constitute one controlled battery condition.
 
+## Identification plots
+
+![Latest strafe speed map, floor trajectory and measured speed over time](identification/strafe_response.png)
+
+Run `y_20261012_100428`: twelve 1.8 s holds through ±100% command. The
+direction-averaged full-command speed is 25.9 cm/s. Orange segments show the
+steady speed fitted over the last approximately 1.0 s of each hold; the trajectory
+also shows forward drift during the strafe experiment. These are hardware
+measurements, not simulated results or a held-out model validation.
+
+![Earlier and latest strafe speed maps compared separately for left and right motion](identification/strafe_comparison.png)
+
+Runs `y_20261012_093538` and `y_20261012_100428`: the latest extends the measured
+range to 90% and 100% command. At 60% command, direction-averaged speed changed
+from 8.9 to 1.3 cm/s. The model uses the latest curve; this comparison documents
+variation between runs. Battery voltage and lift height were not recorded, so it
+does not establish a battery, traction or load correction.
+
 ## Runtime behavior and scope
 
 For each axis, `v_target = table(command delayed by d)` and
