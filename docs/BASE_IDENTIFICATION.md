@@ -71,6 +71,10 @@ steady speed fitted over the last approximately 1.0 s of each hold; the trajecto
 also shows forward drift during the strafe experiment. These are hardware
 measurements, not simulated results or a held-out model validation.
 
+![Measured yaw rate and candidate model fits, with transition details](identification/theta_20261007_171950_dynamics.png)
+
+Run `theta_20261007_171950`: measured gyro turn rate (black) against candidate response models, with two zoomed transition windows. The selected first-order table model uses τ = 0.175 s and delay = 0.020 s, with an in-sample RMS error of about 0.054 rad/s. The second-order candidate gives the same rounded RMS. Commands were ramped over 0.6 s, so the lag time remains loosely identified. These are offline fits to hardware data, not a MuJoCo validation.
+
 ## Runtime behavior and scope
 
 For each axis, `v_target = table(command delayed by d)` and
