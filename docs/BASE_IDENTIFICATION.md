@@ -77,6 +77,21 @@ LiDAR speed against the original offline fit, and wall-derived displacement.
 The overlaid table and fit are preserved from that report; they are not a replay
 of the current PR implementation. The PR retains separate direction tables.
 
+![Strafe static map: measured left/right speeds and the PR table](identification/y_20261012_100428_static.png)
+
+Strafe static map from `y_20261012_100428`, matching the original forward/yaw
+plot style: blue circles are leftward holds, orange hollow squares are rightward
+speed magnitudes, and the black line is the direction-averaged table used by the
+PR. The twelve measured holds cover ±50% through ±100% command. The shaded
+region below 0.40 is a modeling assumption, not a measured breakaway threshold.
+
+Reproduce this plot directly from the checked-in calibration (NumPy and
+Matplotlib required):
+
+```sh
+python tools/plot_strafe_static.py --output docs/identification/y_20261012_100428_static.png
+```
+
 ![Measured strafe speed and response model, with transition details](identification/y_20261012_100428_dynamics.png)
 
 Run `y_20261012_100428`: measured LiDAR sideways speed (black), the PR's
