@@ -284,7 +284,9 @@ These are software acceptance results, not measured hardware agreement:
   proxies, and load-limited diagonal forces. Individual rollers are not modeled.
   Only flat stationary floors are supported; slopes, obstacles, roller impacts,
   and real tire slip are not validated.
-- Chassis collision is a box; arm/environment collisions use per-part convex hulls.
+- Chassis collision is a box; the dome is a sphere fitted to the shell meshes (outer surface, R 0.206 m,
+  2 mm RMS, its top 2 mm below the CAD's; see `dome_collision` in build_info.json), so a payload can rest
+  on top; arm/environment collisions use per-part convex hulls.
   Robot self-collision is disabled because mating CAD parts overlap. This is not
   a collision-free planner or a validated grasping model.
 - Position drives use idealized bias compensation inside finite force caps.

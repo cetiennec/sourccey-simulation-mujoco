@@ -24,6 +24,8 @@ ELBOW_LOWER_DEGREES = -135.0
 # requested operating barrier and home pose both stop slightly below it.
 ELEVATOR_UPPER_METERS = -0.0142
 CAD_ROTATION = Rotation.from_euler("z", np.pi / 4).as_matrix()
+# The dome's printed shell; the three flat Dome_Plate_* parts are left out of the sphere fit.
+DOME_SHELL = ("Dome_Top_v1_1", "Dome_Front_v1_1", "Dome_Back_v1_1", "Dome_Left_v1_1", "Dome_Right_v1_1")
 
 
 def fmt(values):
@@ -166,6 +168,30 @@ def build():
     base.set("pos", fmt([0, 0, height]))
     ET.SubElement(base, "geom", name="chassis_collision", type="box", pos="0 0 0.035", size="0.16 0.16 0.055",
                   contype="2", conaffinity="1", group="3", rgba="0.9 0.5 0.1 0.2")
+    # The dome is visual-only otherwise, so nothing could rest on top of the robot. A sphere fitted to
+    # the shell meshes (least squares, in the base frame) is a smooth contact surface for a payload.
+    points = []
+    for name in DOME_SHELL:
+        dp, dr = frames[name]
+        for vis in links[name].findall("visual"):
+            mesh = vis.find("geometry/mesh")
+            vp, vr = origin(vis)
+            verts = vertices(SOURCE.parent / mesh.get("filename")) * np.fromstring(mesh.get("scale"), sep=" ")
+            points.append((verts @ vr.T + vp) @ dr.T + dp)
+    points = np.unique(np.concatenate(points).round(6), axis=0)
+
+    def fit_sphere(p):  # |p - c|^2 = r^2  <=>  2 p.c + (r^2 - |c|^2) = |p|^2, linear in (c, r^2 - |c|^2)
+        sol = np.linalg.lstsq(np.c_[2 * p, np.ones(len(p))], (p ** 2).sum(1), rcond=None)[0]
+        return sol[:3], float(np.sqrt(sol[3] + sol[:3] @ sol[:3]))
+
+    # The shell has an inner and an outer surface: a first fit lands between them, so refit on the
+    # outer one (points beyond the first radius), the surface a payload actually touches.
+    dome_center, dome_radius = fit_sphere(points)
+    outer = points[np.linalg.norm(points - dome_center, axis=1) > dome_radius]
+    dome_center, dome_radius = fit_sphere(outer)
+    dome_rms = float(np.sqrt(np.mean((np.linalg.norm(outer - dome_center, axis=1) - dome_radius) ** 2)))
+    ET.SubElement(base, "geom", name="dome_collision", type="sphere", size=f"{dome_radius:.6g}",
+                  pos=fmt(dome_center), contype="2", conaffinity="1", group="3", rgba="0.9 0.5 0.1 0.2")
     # Reach point is the wrist-roll origin, unaffected by roll/gripper opening.
     for side in ("left", "right"):
         j = next(j for j in joints if j.get("name") == side + "_wrist_roll")
@@ -229,7 +255,9 @@ def build():
                 "movable_joints": 17, "meshes": len(mesh_names), "mass_kg": float(model.body_mass.sum()),
                 "base_height": height, "simulation_elbow_lower_degrees": ELBOW_LOWER_DEGREES,
                 "simulation_elevator_upper_m": ELEVATOR_UPPER_METERS,
-                "wheels": wheel_info}
+                "wheels": wheel_info,
+                "dome_collision": {"center_base_m": dome_center.tolist(), "radius_m": dome_radius,
+                                   "fit_rms_m": dome_rms}}
     (MODEL.parent / "build_info.json").write_text(json.dumps(metadata, indent=2) + "\n")
     print(json.dumps({k: v for k, v in metadata.items() if k != "wheels"}, indent=2))
     return MODEL
